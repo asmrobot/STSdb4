@@ -146,7 +146,9 @@ namespace STSdb4.Database
             actions[1] = () =>
             {
                 using (MemoryStream ms = new MemoryStream(buffers[1]))
-                    recordIndexerPersist.Load(new BinaryReader(ms), (idx, value) => { helper.SetValue(ref array[idx], value); }, count);
+                    recordIndexerPersist.Load(new BinaryReader(ms), (idx, value) => { 
+                        helper.SetValue(ref array[idx], value); 
+                    }, count);
             };
 
             var task = Task.Factory.StartNew(actions[1]);

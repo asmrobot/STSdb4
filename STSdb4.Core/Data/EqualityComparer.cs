@@ -210,7 +210,9 @@ namespace STSdb4.Data
                 if (type == typeof(byte[]))
                     return Expression.Call(typeof(ByteArrayExtensions).GetMethod("GetHashCodeEx", new Type[] { typeof(byte[]) }), value);
 
-                return Expression.Call(value, type.GetMethod("GetHashCode"));
+                //.net core 防止多个重载的GetHashCode出现错误
+                MethodInfo method = type.GetMethod("GetHashCode", new Type[0]);
+                return Expression.Call(value,method );
             }
 
             if (type == typeof(Guid))

@@ -35,9 +35,15 @@ namespace STSdb4.General.Extensions
             var kv = Expression.Parameter(typeof(KeyValuePair<TKey, TValue>).MakeByRefType(), "kv");
             var key = Expression.Parameter(typeof(TKey), "key");
 
-            var assign = Expression.Assign(Expression.Field(kv, "key"), key);
 
-            return Expression.Lambda<SetKeyDelegate<TKey, TValue>>(assign, kv, key);
+            //var assign = Expression.Assign(Expression.Field(kv, "key"), key);
+            var valueExpression = Expression.Field(kv, "value");
+            var newExpression = Expression.New(typeof(KeyValuePair<TKey, TValue>).GetConstructor(new Type[] { typeof(TKey), typeof(TValue) }), key, valueExpression);
+            var assign = Expression.Assign(kv, newExpression);
+            var block = Expression.Block(valueExpression, newExpression, assign);
+
+
+            return Expression.Lambda<SetKeyDelegate<TKey, TValue>>(block, kv, key);
         }
 
         public Expression<SetValueDelegate<TKey, TValue>> CreateSetValueMethod()
@@ -45,9 +51,13 @@ namespace STSdb4.General.Extensions
             var kv = Expression.Parameter(typeof(KeyValuePair<TKey, TValue>).MakeByRefType(), "kv");
             var value = Expression.Parameter(typeof(TValue), "value");
 
-            var assign = Expression.Assign(Expression.Field(kv, "value"), value);
+            var keyExpression = Expression.Field(kv, "key");
+            var newExpression = Expression.New(typeof(KeyValuePair<TKey, TValue>).GetConstructor(new Type[] { typeof(TKey), typeof(TValue) }), keyExpression, value);
+            var assign = Expression.Assign(kv, newExpression);
+            var block = Expression.Block(keyExpression, newExpression, assign);
+            //var assign = Expression.Assign(Expression.Field(kv, "value"), value);
 
-            return Expression.Lambda<SetValueDelegate<TKey, TValue>>(assign, kv, value);
+            return Expression.Lambda<SetValueDelegate<TKey, TValue>>(block, kv, value);
         }
 
         public Expression<SetKeyValueDelegate<TKey, TValue>> CreateSetKeyValueMethod()
@@ -57,12 +67,16 @@ namespace STSdb4.General.Extensions
             var key = Expression.Parameter(typeof(TKey), "key");
             var value = Expression.Parameter(typeof(TValue), "value");
 
-            var body = Expression.Block(
-                    Expression.Assign(Expression.Field(kv, "key"), key),
-                    Expression.Assign(Expression.Field(kv, "value"), value)
-                    );
+            //var body = Expression.Block(
+            //        Expression.Assign(Expression.Field(kv, "key"), key),
+            //        Expression.Assign(Expression.Field(kv, "value"), value)
+            //        );
+            
+            var newExpression = Expression.New(typeof(KeyValuePair<TKey, TValue>).GetConstructor(new Type[] { typeof(TKey), typeof(TValue) }), key, value);
+            var assign = Expression.Assign(kv, newExpression);
+            var block = Expression.Block( newExpression, assign);
 
-            return Expression.Lambda<SetKeyValueDelegate<TKey, TValue>>(body, kv, key, value);
+            return Expression.Lambda<SetKeyValueDelegate<TKey, TValue>>(block, kv, key, value);
         }
     }
 }
